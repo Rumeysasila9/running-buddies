@@ -1,3 +1,7 @@
+import json
+
+
+
 def main_menu():
     print("1. Trainer")
     print("2. Runner")
@@ -24,6 +28,7 @@ def runner_menu():
 
 
 
+    
 def trainer_login():
 
     username_trainer = input("Please enter your username: ")    
@@ -70,9 +75,14 @@ def runner_login():
 
 
 
-trainers = []
-events = []
-runners = []
+with open("data.json", "r") as file:
+    data = json.load(file)
+
+
+trainers = data["trainers"]
+events = data["events"]
+runners = data["runners"]
+
 
 
 
@@ -102,9 +112,9 @@ while True:
             trainer_start = input("Please enter your choice: ")
 
             if trainer_start == "1" or trainer_start.lower() == "register":
-   
+            
                 trainer_info = {
-
+            
                     "username" : input("Please choose a username: "),
                     "password" : input("Please create a password: "),
                     "first_name" : input("What is your first name: "),
@@ -120,27 +130,34 @@ while True:
 
                 trainers.append(trainer_info)
 
-                print("Registration successful!")
-                
+                data["trainers"] = trainers
+
+                with open("data.json", "w") as file:
+                    json.dump(data, file, indent=4)
+
+                    print("Registration successful!")
+
 
                 logged_in_trainer = trainer_login()
-                
+                                    
                 if logged_in_trainer:
-                     print("Welcome", logged_in_trainer["first_name"], "!")
-                     break
+                    
+                    print("Welcome", logged_in_trainer["first_name"], "!")
+                    break
 
 
-
+            
             elif trainer_start == "2" or trainer_start.lower() == "login":
-
+            
                 logged_in_trainer = trainer_login()
-               
+                           
                 if logged_in_trainer:
+                    
                     print("Welcome", logged_in_trainer["first_name"], "!") 
                     break
- 
 
 
+            
             elif trainer_start == "3" or trainer_start.lower() == "back":
 
                 break
@@ -148,32 +165,33 @@ while True:
 
 
             else: 
-                print("Please enter a valid choice.")
+                print("Please enter a valid choice.")    
+
 
 
 
         if logged_in_trainer:
-
-
+        
+        
             while True:
-
+        
                 trainer_menu()
                 trainer_choice = input("Please enter your choice: ")
 
-
+        
                 if trainer_choice == "1" or trainer_choice.lower() == "view your profile":
-
+        
                     for key, value in logged_in_trainer.items():
-                         
+                                 
                         if key != "trainer_events":
-
+        
                             print(key.replace("_"," ").title(), ":", value)
-
+                
 
 
                 elif trainer_choice == "2" or trainer_choice.lower() == "create new event":
-                           
-                        event= {
+                                           
+                    event= {
                         "event_name": input("What is your event name: "),
                         "location": input("Where is the event: "),
                         "date": input("When is the event: "),
@@ -183,56 +201,71 @@ while True:
                         "max_participants": input("What is the maximum number of participants: "),  
                         "trainer_username": logged_in_trainer["username"],
                         "participants" : []
-                        }   
-                        
+                    }   
+                                        
+                
+                    logged_in_trainer["trainer_events"].append(event)
+                    events.append(event)  
 
-                        logged_in_trainer["trainer_events"].append(event)
-                        events.append(event)   
+                    data["events"] = events
 
-                        print("Event created successfully!")
+                    with open("data.json", "w") as file:
+                        json.dump(data, file, indent=4)                     
+                
+                    print("Event created successfully!")
 
 
 
                 elif trainer_choice == "3" or trainer_choice.lower() == "view your events": 
-                        
-                        for event in logged_in_trainer["trainer_events"]:
-                            
-                            for key,value in event.items():
+                                   
+                    for event in logged_in_trainer["trainer_events"]:
+                                       
+                        for key,value in event.items():
+           
+                            if key != "participants":
+                                           
+                                print(key.replace("_"," ").title(), ":", value)
 
-                                if key != "participants":
-                                
-                                    print(key.replace("_"," ").title(), ":", value)
 
 
-                    
                 elif trainer_choice == "4" or trainer_choice.lower() == "cancel event":   
- 
-                        trainer_event_cancel = input("Do you want to cancel an event? (YES/NO): ")
+                 
+                    trainer_event_cancel = input("Do you want to cancel an event? (YES/NO): ")
+
+                                    
+                    if trainer_event_cancel.lower() == "no":
+                        continue
+
+                
+                    elif trainer_event_cancel.lower() == "yes":
+                
+                        for number, event in enumerate(logged_in_trainer["trainer_events"], start=1):
+                
+                            print(number, event["event_name"].title())
+                
+                
+                    trainer_event_cancel_choice = int(input("Which event would you like to cancel? Please enter the number: "))                
+
+
+                    event = logged_in_trainer["trainer_events"].pop(trainer_event_cancel_choice - 1)
+                    events.remove(event)
+
+
+                    data["events"] = events
+
+                    with open("data.json", "w") as file:
+                        json.dump(data, file, indent=4)
                     
-                        if trainer_event_cancel.lower() == "no":
-                            continue
-
-                        elif trainer_event_cancel.lower() == "yes":
-
-                            for number, event in enumerate(logged_in_trainer["trainer_events"], start=1):
-
-                                print(number, event["event_name"].title())
-
-
-                            trainer_event_cancel_choice = int(input("Which event would you like to cancel? Please enter the number: "))
-
-                            event = logged_in_trainer["trainer_events"].pop(trainer_event_cancel_choice - 1)
-                            events.remove(event)
-                            
-                            print("Event cancelled successfully!")
+                    
+                    print("Event cancelled successfully!")
 
 
 
+                    
                 elif trainer_choice == "5" or trainer_choice.lower() == "exit":
                      
-                     print("Goodbye!", logged_in_trainer["first_name"].title(), "See you again!")    
-                     exit()  
-
+                    print("Goodbye!", logged_in_trainer["first_name"].title(), "See you again!")    
+                    exit()  
 
 
 
@@ -261,38 +294,45 @@ while True:
                     "languages": input("Which languages do you speak? :"),
                     "running_level": input("What is your running level?  Beginner/Intermediate/Advanced :")
                 }             
-
+            
                 runners.append(runner_info)
+
+
+                data["runners"] = runners
+
+                with open("data.json", "w") as file:
+                    json.dump(data, file, indent=4)
+                
                 print("Registration successful!")
+
 
                 logged_in_runner = runner_login()
 
-
                 if logged_in_runner:
+                
                     print("Welcome", logged_in_runner["first_name"],"!")   
-
-                    break            
+                    break   
 
 
 
             elif runner_start == "2" or runner_start.lower() == "login":
-
+            
                 logged_in_runner = runner_login()
-
+            
                 if logged_in_runner:
-
+            
                     print("Welcome", logged_in_runner["first_name"],"!")
                     break
-
-
-
+            
+            
+            
             elif runner_start == "3" or runner_start.lower() == "back": 
-
+            
                 break
-
-
+            
+            
             else:
-                print("Please enter a valid choice.")
+                print("Please enter a valid choice.")         
 
 
 
@@ -308,122 +348,140 @@ while True:
                     for key, value in logged_in_runner.items():
 
                         print(key.replace("_"," ").title(), ":", value)
-
+  
 
 
                 elif runner_choice == "2" or runner_choice.lower() == "view events":
-
+        
                     for event in events:
-
+        
                         for key, value in event.items():
-
+        
                             print(key.replace("_"," ").title(), ":", value)
-
-
-
+        
+        
+        
                 elif runner_choice == "3" or runner_choice.lower() == "view trainers":
-
+        
                     for trainer in trainers:
-
+                
                         for key, value in trainer.items():
-
+        
                             if key not in ("username","password","trainer_events"):
-
+        
                                 print(key.replace("_"," ").title(), ":", value)
 
 
 
                 elif runner_choice == "4" or runner_choice.lower() == "join an event": 
-
+                
                     for number, event in enumerate(events, start=1):
-
+            
                         print(number,event["event_name"])
-
-
+                
+                
                     join_choice = input("Which event would you like to join? Please enter the number: ")   
-
-
+                
                     if join_choice.isdigit():
-
+                
                         event_number = int(join_choice)
-
+                
                         if 1 <= event_number <= len(events):
-
+                
                             selected_event = events[event_number - 1] 
                             selected_event["participants"].append(logged_in_runner["username"])
 
+
+                            data["events"] = events
+
+                            with open("data.json", "w") as file:
+                                json.dump(data, file, indent=4)
+
+
                             print("You have successfully joined") 
-
-
+                
+                
                         else:
                             print("Invalid event number")
-
-
+                
+                
                     else:
                         print("Please enter a valid number.")
 
 
 
-
+                
                 elif runner_choice == "5" or runner_choice.lower() == "cancel participation":
-
+                
                     runner_event_cancel = input("Do you want cancel your event participation? (YES/NO): ")
-
-
+                
+                
                     if runner_event_cancel.lower() == "yes":
-
+                
                         for number, event in enumerate(events, start=1):
-
+                
                             print(number,event["event_name"])
+                
+                
+                
+                    runner_event_cancel_choice = input("Which event do you want to cancel your participation in? Please enter the event number: ") 
+                
+                
+                    if runner_event_cancel_choice.isdigit():
+                
+                        event_number = int(runner_event_cancel_choice)
+
+                
+                        if 1<= event_number <= len(events):
+                
+                            selected_event = events[event_number - 1]
+                
+                
+                            if logged_in_runner["username"] in selected_event["participants"]:
+                
+                                selected_event["participants"].remove(logged_in_runner["username"])
 
 
+                                data["events"] = events
 
-                        runner_event_cancel_choice = input("Which event do you want to cancel your participation in? Please enter the event number: ") 
+                                with open("data.json", "w") as file:
+                                    json.dump(data, file, indent=4)
 
-
-                        if runner_event_cancel_choice.isdigit():
-
-                            event_number = int(runner_event_cancel_choice)
-
-
-                            if 1<= event_number <= len(events):
-
-                                selected_event = events[event_number - 1]
-
-
-                                if logged_in_runner["username"] in selected_event["participants"]:
-
-                                    selected_event["participants"].remove(logged_in_runner["username"])
-
-                                    print("You have canceled your participation.")
-
-
-                                else:
-                                    print("You are not participating in this event.")
-
-
+                                print("You have canceled your participation.")
+                
+                
                             else:
-                                print("Please enter a valid number.")
+                                print("You are not participating in this event.")
+                
+                
+                        else:
+                            print("Please enter a valid number.")
+                
 
-
+                
                     elif runner_event_cancel.lower() == "no":
-
+                
                         continue    
- 
+
 
 
                 elif runner_choice == "6" or runner_choice.lower() == "exit":   
-
+                    
                     exit() 
-
-
-
-
+                    
+                    
+                    
+                    
     elif main_start == "3" or main_start.lower() == "exit":
-
+                    
         exit()
-
-
-
+                    
+                    
+                    
     else:
         print("Invalid choice. Please try again.") 
+                
+                
+                                
+        
+        
