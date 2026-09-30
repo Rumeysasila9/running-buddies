@@ -76,4 +76,11 @@ python running_buddies.py
 - Using `.remove()`
 - Using `exit()`
 - Using `.isdigit()`
-
+- Working with the JSON module 
+- Working with files in Python 
+- Using `import`
+- Using `with`
+- Using `open()`
+- Using `"r"` and `"w` mode 
+- Reading JSON data with `json.load()`
+- Writing JSON date with `json.dump()`
